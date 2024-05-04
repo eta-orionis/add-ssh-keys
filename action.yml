@@ -1,0 +1,22 @@
+name: "Set up ssh keys and known hosts"
+description: "Setup the .ssh/known_hosts file to include known hosts and keys. Add GIT_SSH_KEY"
+inputs:
+  ssh-known-hosts: # id of input
+    description: "Contents of a known_hosts file to add to ~/.ssh/known_hosts"
+    required: true
+  ssh-key:
+    description: "Contents of a private ssh key to use for git operations"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Create .ssh/known_hosts
+      env:
+        INPUT_SSH_HOST_KEYS: ${{ inputs.ssh-known-hosts }}
+        INPUT_GIT_SSH_KEY: ${{ inputs.ssh-key }}
+      shell: bash
+      run: |
+        install -d ~/.ssh -m 0600
+        printenv INPUT_SSH_HOST_KEYS >> ~/.ssh/known_hosts
+        eval $(ssh-agent)
+        printenv INPUT_GIT_SSH_KEY | ssh-add -
